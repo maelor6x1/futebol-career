@@ -1,126 +1,92 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useGame } from '../context/GameContext.jsx'
-import { simulateMatchEvents } from '../data/gameLogic.js'
-import { CLUBS } from '../data/gameData.js'
+import { simulateMatch } from '../data/gameLogic.js'
 import { Trophy, Clock, Play, RotateCcw, Home } from 'lucide-react'
 
 export default function Match() {
-  const { player, career, dispatch } = useGame()
-  const [phase, setPhase] = useState('preview') // preview, playing, finished
+  const { player, currentMatch, dispatch, settings } = useGame()
+  const [phase, setPhase] = useState('preview')
   const [minute, setMinute] = useState(0)
   const [events, setEvents] = useState([])
-  const [score, setScore] = useState({ player: 0, opponent: 0 })
-  const [matchRating, setMatchRating] = useState(6.0)
-  const [playerEvents, setPlayerEvents] = useState([])
-  const intervalRef = useRef(null)
+  const [matchResult, setMatchResult] = useState(null)
+  const [timer, setTimer] = useState(null)
 
-  const nextMatch = career.calendar?.find(m => !m.played)
-  const club = CLUBS.find(c => c.id === player.clubId)
-  const opponent = nextMatch?.opponent || { name: 'Adversário', reputation: 70 }
+  if (!player || !currentMatch) return null
+
+  const { opponent, competition, isHome } = currentMatch
 
   const startMatch = () => {
     setPhase('playing')
     setMinute(0)
     setEvents([])
-    setScore({ player: 0, opponent: 0 })
-    setPlayerEvents([])
-
-    const result = simulateMatchEvents(player, opponent, 90, player.position)
+    setMatchResult(null)
 
     let currentMinute = 0
-    intervalRef.current = setInterval(() => {
+    const matchEvents = []
+    const interval = setInterval(() => {
       currentMinute += 1
       setMinute(currentMinute)
 
-      // Add events at their minute
-      const newEvents = result.events.filter(e => e.minute === currentMinute)
-      if (newEvents.length > 0) {
-        setEvents(prev => [...prev, ...newEvents])
-        newEvents.forEach(e => {
-          if (e.team === 'player' && e.type === 'goal') {
-            setScore(s => ({ ...s, player: s.player + 1 }))
-          } else if (e.team === 'opponent' && e.type === 'goal') {
-            setScore(s => ({ ...s, opponent: s.opponent + 1 }))
-          }
-        })
-      }
-
-      if (currentMinute >= 90) {
-        clearInterval(intervalRef.current)
+      if (currentMinute === 90) {
+        clearInterval(interval)
+        const result = simulateMatch(player, opponent, settings.difficulty, matchEvents)
+        setMatchResult(result)
         setPhase('finished')
-        setMatchRating(result.rating)
-        setPlayerEvents(result.playerEvents)
-
-        const playerGoals = result.playerEvents.filter(e => e.type === 'goal').length
-        const playerAssists = result.playerEvents.filter(e => e.type === 'assist').length
-
-        dispatch({
-          type: 'PLAY_MATCH',
-          payload: {
-            matchResult: {
-              matchId: nextMatch?.id,
-              opponent: opponent.name,
-              playerGoals: playerGoals,
-              playerAssists: playerAssists,
-              playerScore: result.playerGoals,
-              opponentScore: result.opponentGoals,
-              rating: result.rating,
-              result: result.result,
-              events: result.events,
-              date: career.week,
-            },
-          },
-        })
+        dispatch({ type: 'FINISH_MATCH', payload: result })
       }
-    }, 80) // ~7 seconds for full match
+    }, 50)
+
+    setTimer(interval)
   }
 
-  useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [])
-
-  const getEventClass = (type) => {
-    if (type === 'goal') return 'goal'
-    if (type === 'assist') return 'assist'
-    if (type === 'yellowCard') return 'yellow'
-    if (type === 'redCard') return 'red'
-    if (type === 'substitution') return 'sub'
-    return ''
+  const resetMatch = () => {
+    if (timer) clearInterval(timer)
+    setPhase('preview')
+    setMinute(0)
+    setEvents([])
+    setMatchResult(null)
+    dispatch({ type: 'RESET_MATCH' })
   }
 
-  const getEventColor = (type) => {
-    const colors = {
-      goal: '#22c55e', assist: '#3b82f6', yellowCard: '#f59e0b',
-      redCard: '#ef4444', substitution: '#10b981', save: '#3b82f6',
-      tackle: '#22c55e', keyPass: '#3b82f6', dribble: '#10b981',
-      shotOnTarget: '#f59e0b', shotOffTarget: '#ef4444',
+  const getScore = () => {
+    if (!matchResult) return { home: 0, away: 0 }
+    return {
+      home: isHome ? matchResult.playerGoals : matchResult.opponentGoals,
+      away: isHome ? matchResult.opponentGoals : matchResult.playerGoals,
     }
-    return colors[type] || 'var(--text-muted)'
   }
+
+  const score = getScore()
 
   return (
     <div className="page animate-fade-in">
-      <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '24px' }}>
+      <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>
         <Trophy size={28} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
-        Partida
+        {competition}
       </h1>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+        {isHome ? 'Em casa' : 'Fora de casa'} vs {opponent.name}
+      </p>
 
       {/* Scoreboard */}
       <div className="card" style={{ marginBottom: '24px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', marginBottom: '16px' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>{club?.name}</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Casa</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+              {isHome ? player.club?.name || 'Seu Time' : opponent.name}
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 800, color: 'var(--primary)' }}>
+              {score.home}
+            </div>
           </div>
-          <div style={{
-            fontSize: '48px', fontWeight: 900, fontFamily: 'monospace',
-            background: 'var(--bg-tertiary)', padding: '8px 24px', borderRadius: 'var(--radius-lg)'
-          }}>
-            {score.player} - {score.opponent}
-          </div>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-muted)' }}>×</div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>{opponent.name}</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{nextMatch?.competition || 'Amistoso'}</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+              {isHome ? opponent.name : player.club?.name || 'Seu Time'}
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 800, color: 'var(--primary)' }}>
+              {score.away}
+            </div>
           </div>
         </div>
 
@@ -146,59 +112,59 @@ export default function Match() {
           )}
           {phase === 'finished' && (
             <>
-              <button onClick={() => dispatch({ type: 'SET_PAGE', payload: 'dashboard' })} className="btn btn-primary">
-                <Home size={18} /> Voltar ao Painel
+              <button onClick={resetMatch} className="btn btn-secondary btn-lg">
+                <RotateCcw size={18} /> Revanche
               </button>
-              <button onClick={startMatch} className="btn btn-secondary">
-                <RotateCcw size={18} /> Jogar Novamente
+              <button onClick={() => dispatch({ type: 'SET_PAGE', payload: 'dashboard' })} className="btn btn-primary btn-lg">
+                <Home size={18} /> Voltar ao Painel
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Match Result Summary */}
-      {phase === 'finished' && (
-        <div className="card animate-fade-in" style={{ marginBottom: '24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>
-            {score.player > score.opponent ? 'Vitória!' : score.player < score.opponent ? 'Derrota' : 'Empate'}
+      {/* Match Events */}
+      {events.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Lances da Partida</span>
           </div>
-          <div style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>
-            Nota: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>{matchRating}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '12px' }}>
-            <div><span style={{ color: 'var(--success)', fontWeight: 700 }}>{playerEvents.filter(e => e.type === 'goal').length}</span> gols</div>
-            <div><span style={{ color: 'var(--secondary)', fontWeight: 700 }}>{playerEvents.filter(e => e.type === 'assist').length}</span> assistências</div>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {events.map((evt, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '10px 0', borderBottom: '1px solid var(--border)',
+                color: evt.type === 'goal' ? 'var(--success)' : evt.type === 'yellowCard' ? 'var(--accent)' : 'var(--text-secondary)'
+              }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, minWidth: '40px' }}>{evt.minute}'</span>
+                <span>{evt.description}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Events Feed */}
-      <div className="card">
-        <div className="card-header">
-          <span className="card-title">Lances da Partida</span>
-          <span className="badge badge-secondary">{events.length} eventos</span>
+      {/* Match Result */}
+      {matchResult && (
+        <div className="card animate-fade-in" style={{ marginTop: '24px', borderColor: 'var(--primary)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '20px', fontWeight: 800, marginBottom: '12px' }}>
+              {matchResult.result === 'win' ? 'Vitória!' : matchResult.result === 'draw' ? 'Empate' : 'Derrota'}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              {matchResult.playerGoals > 0 && (
+                <span className="badge badge-success">Gols: {matchResult.playerGoals}</span>
+              )}
+              {matchResult.assists > 0 && (
+                <span className="badge badge-primary">Assistências: {matchResult.assists}</span>
+              )}
+              {matchResult.rating && (
+                <span className="badge badge-accent">Nota: {matchResult.rating}</span>
+              )}
+            </div>
+          </div>
         </div>
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          {events.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
-              {phase === 'preview' ? 'A partida ainda não começou' : 'Aguardando lances...'}
-            </p>
-          ) : (
-            events.map((event, idx) => (
-              <div key={idx} className={`match-event ${getEventClass(event.type)} animate-fade-in`}>
-                <span className="match-event-time">{event.minute}'</span>
-                <div className="match-event-icon" style={{ background: `${getEventColor(event.type)}20`, color: getEventColor(event.type) }}>
-                  <span style={{ fontSize: '14px' }}>
-                    {event.type === 'goal' ? '⚽' : event.type === 'yellowCard' ? '🟨' : event.type === 'redCard' ? '🟥' : event.type === 'substitution' ? '🔄' : '•'}
-                  </span>
-                </div>
-                <span className="match-event-text">{event.text}</span>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      )}
     </div>
   )
 }
