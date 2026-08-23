@@ -755,16 +755,27 @@ export const ACHIEVEMENTS = [
 // ============================================
 
 export const CAREER_MILESTONES = [
-  { age: 16, label: 'Estreia Profissional', description: 'Idade mínima para jogar profissionalmente' },
-  { age: 18, label: 'Maioridade', description: 'Pode assinar contratos internacionais sem restrições' },
-  { age: 21, label: 'Promessa Consolidada', description: 'Expectativas aumentam significativamente' },
-  { age: 25, label: 'Auge Físico', description: 'Pico de condicionamento físico' },
-  { age: 28, label: 'Experiência Máxima', description: 'Combinação de técnica e experiência' },
-  { age: 30, label: 'Veterano', description: 'Início da curva de declínio físico' },
-  { age: 32, label: 'Rumo ao Fim', description: 'Mídia começa a especular sobre aposentadoria' },
-  { age: 35, label: 'Aposentadoria Próxima', description: 'Muitos jogadores se aposentam por aqui' },
-  { age: 38, label: 'Raridade', description: 'Poucos jogadores chegam tão longe' },
-  { age: 40, label: 'Lenda Viva', description: 'Status imortal, independente de performance' },
+  { id: 'debut', name: 'Estreia', description: 'Jogou sua primeira partida profissional', requirement: { type: 'matches', value: 1 } },
+  { id: 'ten_matches', name: '10 Partidas', description: 'Jogou 10 partidas na carreira', requirement: { type: 'matches', value: 10 } },
+  { id: 'fifty_matches', name: '50 Partidas', description: 'Jogou 50 partidas na carreira', requirement: { type: 'matches', value: 50 } },
+  { id: 'hundred_matches', name: '100 Partidas', description: 'Jogou 100 partidas na carreira', requirement: { type: 'matches', value: 100 } },
+  { id: 'two_hundred_matches', name: '200 Partidas', description: 'Jogou 200 partidas na carreira', requirement: { type: 'matches', value: 200 } },
+  { id: 'first_goal', name: 'Primeiro Gol', description: 'Marcou seu primeiro gol', requirement: { type: 'goals', value: 1 } },
+  { id: 'ten_goals', name: '10 Gols', description: 'Marcou 10 gols na carreira', requirement: { type: 'goals', value: 10 } },
+  { id: 'fifty_goals', name: '50 Gols', description: 'Marcou 50 gols na carreira', requirement: { type: 'goals', value: 50 } },
+  { id: 'hundred_goals', name: '100 Gols', description: 'Marcou 100 gols na carreira', requirement: { type: 'goals', value: 100 } },
+  { id: 'first_assist', name: 'Primeira Assistência', description: 'Deu sua primeira assistência', requirement: { type: 'assists', value: 1 } },
+  { id: 'ten_assists', name: '10 Assistências', description: 'Deu 10 assistências na carreira', requirement: { type: 'assists', value: 10 } },
+  { id: 'fifty_assists', name: '50 Assistências', description: 'Deu 50 assistências na carreira', requirement: { type: 'assists', value: 50 } },
+  { id: 'first_title', name: 'Primeiro Título', description: 'Ganhou seu primeiro título', requirement: { type: 'titles', value: 1 } },
+  { id: 'five_titles', name: '5 Títulos', description: 'Ganhou 5 títulos na carreira', requirement: { type: 'titles', value: 5 } },
+  { id: 'ten_titles', name: '10 Títulos', description: 'Ganhou 10 títulos na carreira', requirement: { type: 'titles', value: 10 } },
+  { id: 'first_transfer', name: 'Primeira Transferência', description: 'Mudou de clube pela primeira vez', requirement: { type: 'transfers', value: 1 } },
+  { id: 'three_transfers', name: '3 Transferências', description: 'Mudou de clube 3 vezes', requirement: { type: 'transfers', value: 3 } },
+  { id: 'national_team', name: 'Convocação', description: 'Foi convocado para a seleção nacional', requirement: { type: 'nationalTeam', value: true } },
+  { id: 'world_cup', name: 'Campeão do Mundo', description: 'Ganhou a Copa do Mundo', requirement: { type: 'worldCup', value: true } },
+  { id: 'champions', name: 'Rei da Europa', description: 'Ganhou a Liga dos Campeões', requirement: { type: 'champions', value: true } },
+  { id: 'ballon_dor', name: 'Bola de Ouro', description: 'Ganhou a Bola de Ouro', requirement: { type: 'ballonDor', value: true } },
 ];
 
 export const FORM_LEVELS = [
@@ -776,6 +787,12 @@ export const FORM_LEVELS = [
   { min: 85, max: 95, label: 'Excelente', color: '#00FF00', description: 'Fase artilheira. Impossível parar.', modifier: 1.20 },
   { min: 95, max: 100, label: 'Inspirada', color: '#00FA9A', description: 'Fase de vida. Tudo que toca vira ouro.', modifier: 1.35 },
 ];
+// ============================================
+// ALIASES DE COMPATIBILIDADE
+// ============================================
+
+export const DIFFICULTY_LEVELS = DIFFICULTY_SETTINGS;
+export const SEASON_MONTHS = SEASON_PHASES;
 
 // ============================================
 // FIM DO gameData.js
