@@ -263,3 +263,31 @@ export function loadGame() {
 export function deleteSave() {
   localStorage.removeItem('futebolCareer_save');
 }
+export function calculatePotential(position, age = 16, nationality = 'Brasil') {
+  // Base aleatória entre 60 e 85
+  let potential = Math.floor(Math.random() * 26) + 60;
+
+  // Modificador por idade (quanto mais novo, mais potencial)
+  if (age <= 16) potential += 15;
+  else if (age <= 18) potential += 10;
+  else if (age <= 20) potential += 5;
+  else if (age <= 22) potential += 2;
+  else if (age >= 30) potential -= 15;
+  else if (age >= 28) potential -= 10;
+  else if (age >= 25) potential -= 5;
+
+  // Modificador por posição
+  const positionBonus = {
+    'gk': 0, 'cb': 2, 'lb': 3, 'rb': 3,
+    'cdm': 2, 'cm': 5, 'cam': 5, 'lm': 4, 'rm': 4,
+    'lw': 5, 'rw': 5, 'st': 5, 'cf': 4,
+  };
+  potential += positionBonus[position] || 0;
+
+  // Modificador por nacionalidade (países com forte tradição)
+  const strongNations = ['Brasil', 'Argentina', 'França', 'Espanha', 'Alemanha', 'Inglaterra', 'Itália', 'Portugal', 'Holanda', 'Bélgica', 'Uruguai', 'Croácia'];
+  if (strongNations.includes(nationality)) potential += 3;
+
+  // Cap entre 40 e 99
+  return Math.min(99, Math.max(40, potential));
+}
