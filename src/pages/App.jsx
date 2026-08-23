@@ -24,8 +24,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <Navigation />
-      <main style={{
-        marginLeft: '260px',
+      <main className="main-content" style={{
         flex: 1,
         padding: '32px',
         maxWidth: '1200px',
