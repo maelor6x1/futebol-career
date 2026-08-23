@@ -16,23 +16,25 @@ export default function CreatePlayer() {
     
     let height, weight
     if (position === 'GK') {
-      height = Math.floor(Math.random() * 15) + 185 // 185-200
-      weight = Math.floor(Math.random() * 15) + 80 // 80-95
+      height = Math.floor(Math.random() * 15) + 185
+      weight = Math.floor(Math.random() * 15) + 80
     } else if (['CB', 'CDM', 'ST'].includes(position)) {
-      height = Math.floor(Math.random() * 18) + 178 // 178-196
-      weight = Math.floor(Math.random() * 18) + 72 // 72-90
+      height = Math.floor(Math.random() * 18) + 178
+      weight = Math.floor(Math.random() * 18) + 72
     } else if (['LB', 'RB', 'LM', 'RM', 'LW', 'RW'].includes(position)) {
-      height = Math.floor(Math.random() * 15) + 170 // 170-185
-      weight = Math.floor(Math.random() * 15) + 65 // 65-80
+      height = Math.floor(Math.random() * 15) + 170
+      weight = Math.floor(Math.random() * 15) + 65
     } else {
-      height = Math.floor(Math.random() * 18) + 170 // 170-188
-      weight = Math.floor(Math.random() * 18) + 65 // 65-83
+      height = Math.floor(Math.random() * 18) + 170
+      weight = Math.floor(Math.random() * 18) + 65
     }
     
     const potential = calculatePotential(age, height, weight, nationality, position)
     const attributes = generateInitialAttributes(position, potential)
     const overall = calculateOverall(attributes, position)
     const club = assignInitialClub(overall, potential, nationality)
+    const contractYears = Math.floor(Math.random() * 3) + 2
+    const weeklySalary = Math.round((club.budget / 1000000) * (overall / 100) * 5000)
     
     return {
       name: '',
@@ -47,6 +49,8 @@ export default function CreatePlayer() {
       attributes,
       clubId: club.id,
       clubName: club.name,
+      contractYears,
+      weeklySalary,
     }
   }
   
@@ -76,7 +80,6 @@ export default function CreatePlayer() {
         assists: 0,
         matches: 0,
         season: 2024,
-        contractYears: Math.floor(Math.random() * 3) + 2, // 2-4 anos
       },
     })
   }
@@ -91,7 +94,6 @@ export default function CreatePlayer() {
           Passo {step} de 3
         </p>
 
-        {/* Progress */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '32px' }}>
           {[1,2,3].map(s => (
             <div key={s} style={{
@@ -104,7 +106,6 @@ export default function CreatePlayer() {
           ))}
         </div>
 
-        {/* Step 1: Basic Info */}
         {step === 1 && (
           <div className="card animate-fade-in">
             <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Informações Básicas</h2>
@@ -132,7 +133,8 @@ export default function CreatePlayer() {
                   const attributes = generateInitialAttributes(playerData.position, potential)
                   const overall = calculateOverall(attributes, playerData.position)
                   const club = assignInitialClub(overall, potential, playerData.nationality)
-                  setPlayerData(p => ({ ...p, age, potential, overall, attributes, clubId: club.id, clubName: club.name }))
+                  const weeklySalary = Math.round((club.budget / 1000000) * (overall / 100) * 5000)
+                  setPlayerData(p => ({ ...p, age, potential, overall, attributes, clubId: club.id, clubName: club.name, weeklySalary }))
                 }}
               />
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -144,14 +146,10 @@ export default function CreatePlayer() {
               <div className="progress-bar" style={{ marginTop: '8px' }}>
                 <div className="progress-bar-fill primary" style={{ width: `${playerData.potential}%` }} />
               </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                O potencial é calculado automaticamente pela idade, físico e nacionalidade
-              </p>
             </div>
           </div>
         )}
 
-        {/* Step 2: Position & Physical */}
         {step === 2 && (
           <div className="card animate-fade-in">
             <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Posição e Físico</h2>
@@ -165,8 +163,8 @@ export default function CreatePlayer() {
                       const attributes = generateInitialAttributes(pos.id, playerData.potential)
                       const overall = calculateOverall(attributes, pos.id)
                       const club = assignInitialClub(overall, playerData.potential, playerData.nationality)
-                      update('position', pos.id)
-                      setPlayerData(p => ({ ...p, position: pos.id, overall, attributes, clubId: club.id, clubName: club.name }))
+                      const weeklySalary = Math.round((club.budget / 1000000) * (overall / 100) * 5000)
+                      setPlayerData(p => ({ ...p, position: pos.id, overall, attributes, clubId: club.id, clubName: club.name, weeklySalary }))
                     }}
                     style={{
                       padding: '10px',
@@ -195,7 +193,8 @@ export default function CreatePlayer() {
                   const attributes = generateInitialAttributes(playerData.position, potential)
                   const overall = calculateOverall(attributes, playerData.position)
                   const club = assignInitialClub(overall, potential, playerData.nationality)
-                  setPlayerData(p => ({ ...p, height, potential, overall, attributes, clubId: club.id, clubName: club.name }))
+                  const weeklySalary = Math.round((club.budget / 1000000) * (overall / 100) * 5000)
+                  setPlayerData(p => ({ ...p, height, potential, overall, attributes, clubId: club.id, clubName: club.name, weeklySalary }))
                 }}
               />
             </div>
@@ -209,7 +208,8 @@ export default function CreatePlayer() {
                   const attributes = generateInitialAttributes(playerData.position, potential)
                   const overall = calculateOverall(attributes, playerData.position)
                   const club = assignInitialClub(overall, potential, playerData.nationality)
-                  setPlayerData(p => ({ ...p, weight, potential, overall, attributes, clubId: club.id, clubName: club.name }))
+                  const weeklySalary = Math.round((club.budget / 1000000) * (overall / 100) * 5000)
+                  setPlayerData(p => ({ ...p, weight, potential, overall, attributes, clubId: club.id, clubName: club.name, weeklySalary }))
                 }}
               />
             </div>
@@ -239,7 +239,6 @@ export default function CreatePlayer() {
           </div>
         )}
 
-        {/* Step 3: Summary */}
         {step === 3 && (
           <div className="card animate-fade-in">
             <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Resumo da Carreira</h2>
@@ -259,6 +258,14 @@ export default function CreatePlayer() {
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Clube Inicial</span>
                 <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{playerData.clubName}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Contrato</span>
+                <span style={{ fontWeight: 600 }}>{playerData.contractYears} anos</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Salário Semanal</span>
+                <span style={{ fontWeight: 600, color: 'var(--success)' }}>${playerData.weeklySalary?.toLocaleString() || '0'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Idade / Potencial</span>
@@ -286,7 +293,6 @@ export default function CreatePlayer() {
           </div>
         )}
 
-        {/* Navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
           <button
             onClick={() => setStep(s => Math.max(1, s - 1))}
