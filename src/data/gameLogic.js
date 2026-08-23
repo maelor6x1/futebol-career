@@ -291,3 +291,97 @@ export function calculatePotential(position, age = 16, nationality = 'Brasil') {
   // Cap entre 40 e 99
   return Math.min(99, Math.max(40, potential));
 }
+export function assignInitialClub(overall, potential, age, nationality, position) {
+  // Importa CLUBS do gameData.js (já deve estar importado no topo do arquivo)
+  // Se não estiver, adicione: import { CLUBS } from './gameData.js';
+  
+  // Jogadores muito jovens (16-17) começam em clubes menores ou base
+  // Jogadores mais velhos (18-20) podem ir para clubes médios
+  // Raros casos de jovens promessas vão direto para grandes clubes
+  
+  let eligibleClubs = [];
+  
+  // Define tier baseado em overall e potencial
+  let targetTier = 3; // Default: começa em divisão inferior
+  
+  const combinedScore = overall + (potential - overall) * 0.5;
+  
+  if (age <= 17) {
+    // Jovens: clubes de série B/C ou times de base de grandes clubes
+    if (combinedScore >= 75) targetTier = 2;
+    if (combinedScore >= 85) targetTier = 1; // Raro: promessa vai direto pro time principal
+  } else if (age <= 20) {
+    if (combinedScore >= 55) targetTier = 2;
+    if (combinedScore >= 70) targetTier = 1;
+  } else {
+    if (combinedScore >= 50) targetTier = 2;
+    if (combinedScore >= 65) targetTier = 1;
+  }
+  
+  // Filtra clubes pelo tier
+  eligibleClubs = CLUBS.filter(club => club.tier === targetTier);
+  
+  // Se não houver clubes no tier, expande
+  if (eligibleClubs.length === 0) {
+    eligibleClubs = CLUBS.filter(club => club.tier <= targetTier + 1);
+  }
+  
+  // Preferência por clubes do mesmo país da nacionalidade
+  const sameCountryClubs = eligibleClubs.filter(club => club.country === nationality);
+  const otherClubs = eligibleClubs.filter(club => club.country !== nationality);
+  
+  // 60% chance de começar no próprio país, 40% no exterior
+  let finalPool = sameCountryClubs.length > 0 && Math.random() < 0.6 
+    ? sameCountryClubs 
+    : (otherClubs.length > 0 ? otherClubs : eligibleClubs);
+  
+  // Se ainda vazio, usa todos
+  if (finalPool.length === 0) finalPool = CLUBS;
+  
+  // Sorteia um clube
+  const selectedClub = finalPool[Math.floor(Math.random() * finalPool.length)];
+  
+  // Define situação no clube
+  let status = 'rotation'; // reserva/rodízio por padrão
+  if (combinedScore >= 80) status = 'starter'; // titular se for muito bom
+  if (combinedScore <= 50) status = 'bench'; // banco se for fraco
+  if (age <= 17) status = 'youth'; // time de base
+  
+  return {
+    club: selectedClub,
+    status: status,
+    contractYears: age <= 18 ? 3 : (age <= 21 ? 4 : 3),
+    wage: calculateInitialWage(overall, potential, age, selectedClub),
+    squadNumber: Math.floor(Math.random() * 30) + 1,
+  };
+}
+
+function calculateInitialWage(overall, potential, age, club) {
+  // Salário base
+  let baseWage = 1000;
+  
+  // Multiplicador por overall
+  if (overall >= 80) baseWage = 50000;
+  else if (overall >= 70) baseWage = 15000;
+  else if (overall >= 60) baseWage = 5000;
+  else if (overall >= 50) baseWage = 2000;
+  
+  // Bônus por potencial
+  if (potential >= 90) baseWage *= 2;
+  else if (potential >= 80) baseWage *= 1.5;
+  
+  // Redutor por idade (jovens ganham menos)
+  if (age <= 17) baseWage *= 0.3;
+  else if (age <= 19) baseWage *= 0.6;
+  else if (age <= 21) baseWage *= 0.8;
+  
+  // Multiplicador pelo orçamento/reputação do clube
+  const clubMultiplier = Math.max(0.5, club.budget / 50000000);
+  baseWage *= clubMultiplier;
+  
+  // Variação aleatória de ±20%
+  const variance = 0.8 + Math.random() * 0.4;
+  baseWage *= variance;
+  
+  return Math.floor(baseWage);
+}
