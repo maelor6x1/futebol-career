@@ -32,32 +32,31 @@ export function generateInitialAttributes(position, potential = 70) {
   return attrs;
 }
 
-export function calculatePotential(age, height, weight, nationality, position) {
-  let potential = Math.floor(Math.random() * 26) + 55;
-
-  if (age <= 16) potential += 12;
-  else if (age <= 17) potential += 8;
-  else if (age <= 18) potential += 5;
-  else if (age <= 19) potential += 2;
-  else if (age >= 25) potential -= 5;
-
-  if (height >= 195) potential -= 2;
-  if (height <= 165) potential += 2;
-
-  const idealWeight = (height - 100) * 0.9;
-  if (weight > idealWeight + 10) potential -= 3;
-
-  const posBonus = {
-    gk: 0, cb: 1, lb: 2, rb: 2,
-    cdm: 1, cm: 3, cam: 3, lm: 2, rm: 2,
-    lw: 3, rw: 3, st: 3, cf: 2,
+export function calculateOverall(attrs, position) {
+  let total = 0;
+  let count = 0;
+  const weights = {
+    GK: { reflexes: 0.25, handling: 0.2, positioningGK: 0.2, kicking: 0.15, oneOnOne: 0.15, composure: 0.05 },
+    CB: { tackling: 0.2, marking: 0.2, interception: 0.15, aerial: 0.15, strength: 0.1, heading: 0.1, positioning: 0.1 },
+    LB: { pace: 0.2, stamina: 0.15, crossing: 0.15, tackling: 0.15, marking: 0.15, dribbling: 0.1, passing: 0.1 },
+    RB: { pace: 0.2, stamina: 0.15, crossing: 0.15, tackling: 0.15, marking: 0.15, dribbling: 0.1, passing: 0.1 },
+    CDM: { tackling: 0.2, interception: 0.15, passing: 0.15, vision: 0.1, stamina: 0.15, strength: 0.1, workRate: 0.15 },
+    CM: { passing: 0.2, vision: 0.15, stamina: 0.15, dribbling: 0.1, tackling: 0.1, workRate: 0.15, composure: 0.15 },
+    CAM: { vision: 0.2, passing: 0.15, dribbling: 0.15, shooting: 0.15, composure: 0.15, positioning: 0.1, pace: 0.1 },
+    LM: { pace: 0.2, dribbling: 0.15, crossing: 0.15, stamina: 0.15, passing: 0.1, shooting: 0.1, acceleration: 0.15 },
+    RM: { pace: 0.2, dribbling: 0.15, crossing: 0.15, stamina: 0.15, passing: 0.1, shooting: 0.1, acceleration: 0.15 },
+    LW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
+    RW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
+    ST: { shooting: 0.25, heading: 0.15, positioning: 0.15, pace: 0.1, strength: 0.1, composure: 0.15, finishing: 0.1 },
+    CF: { shooting: 0.2, dribbling: 0.15, vision: 0.1, passing: 0.1, positioning: 0.15, pace: 0.1, composure: 0.1, strength: 0.1 },
   };
-  potential += posBonus[position] || 0;
-
-  const strongNations = ['Brasil','Argentina','França','Espanha','Alemanha','Inglaterra','Itália','Portugal','Holanda','Bélgica','Uruguai','Croácia'];
-  if (strongNations.includes(nationality)) potential += 3;
-
-  return Math.min(99, Math.max(40, potential));
+  const w = weights[position] || weights.CM;
+  Object.entries(w).forEach(([attr, weight]) => {
+    const val = attrs[attr] || 50;
+    total += val * weight;
+    count += weight;
+  });
+  return Math.round(total / count);
 }
 
 export function simulateMatchEvents(player, opponent, minutes, position, difficulty = 'normal') {
@@ -264,34 +263,35 @@ export function loadGame() {
 export function deleteSave() {
   localStorage.removeItem('futebolCareer_save');
 }
-export function calculatePotential(position, age = 16, nationality = 'Brasil') {
-  // Base aleatória entre 60 e 85
-  let potential = Math.floor(Math.random() * 26) + 60;
 
-  // Modificador por idade (quanto mais novo, mais potencial)
-  if (age <= 16) potential += 15;
-  else if (age <= 18) potential += 10;
-  else if (age <= 20) potential += 5;
-  else if (age <= 22) potential += 2;
-  else if (age >= 30) potential -= 15;
-  else if (age >= 28) potential -= 10;
+export function calculatePotential(age, height, weight, nationality, position) {
+  let potential = Math.floor(Math.random() * 26) + 55;
+
+  if (age <= 16) potential += 12;
+  else if (age <= 17) potential += 8;
+  else if (age <= 18) potential += 5;
+  else if (age <= 19) potential += 2;
   else if (age >= 25) potential -= 5;
 
-  // Modificador por posição
-  const positionBonus = {
-    'gk': 0, 'cb': 2, 'lb': 3, 'rb': 3,
-    'cdm': 2, 'cm': 5, 'cam': 5, 'lm': 4, 'rm': 4,
-    'lw': 5, 'rw': 5, 'st': 5, 'cf': 4,
-  };
-  potential += positionBonus[position] || 0;
+  if (height >= 195) potential -= 2;
+  if (height <= 165) potential += 2;
 
-  // Modificador por nacionalidade (países com forte tradição)
-  const strongNations = ['Brasil', 'Argentina', 'França', 'Espanha', 'Alemanha', 'Inglaterra', 'Itália', 'Portugal', 'Holanda', 'Bélgica', 'Uruguai', 'Croácia'];
+  const idealWeight = (height - 100) * 0.9;
+  if (weight > idealWeight + 10) potential -= 3;
+
+  const posBonus = {
+    gk: 0, cb: 1, lb: 2, rb: 2,
+    cdm: 1, cm: 3, cam: 3, lm: 2, rm: 2,
+    lw: 3, rw: 3, st: 3, cf: 2,
+  };
+  potential += posBonus[position] || 0;
+
+  const strongNations = ['Brasil','Argentina','França','Espanha','Alemanha','Inglaterra','Itália','Portugal','Holanda','Bélgica','Uruguai','Croácia'];
   if (strongNations.includes(nationality)) potential += 3;
 
-  // Cap entre 40 e 99
   return Math.min(99, Math.max(40, potential));
 }
+
 export function assignInitialClub(overall, potential, nationality) {
   let targetTier = 3;
   const combinedScore = overall + (potential - overall) * 0.5;
@@ -309,6 +309,5 @@ export function assignInitialClub(overall, potential, nationality) {
     ? sameCountryClubs
     : eligibleClubs;
 
-  const selectedClub = finalPool[Math.floor(Math.random() * finalPool.length)] || CLUBS[0];
-  return selectedClub;
+  return finalPool[Math.floor(Math.random() * finalPool.length)] || CLUBS[0];
 }
