@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useGame } from '../context/GameContext.jsx'
 import {
   LayoutDashboard, Trophy, Dumbbell, CalendarDays,
   TrendingUp, ArrowLeftRight, HeartHandshake, Wallet,
-  BarChart3, Settings, LogOut
+  BarChart3, Settings, LogOut, Menu, X
 } from 'lucide-react'
 
 const navItems = [
@@ -21,87 +21,107 @@ const navItems = [
 
 export default function Navigation() {
   const { currentPage, dispatch, player } = useGame()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const handleNav = (id) => {
+    dispatch({ type: 'SET_PAGE', payload: id })
+    setMobileOpen(false)
+  }
 
   return (
-    <nav style={{
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      width: '260px',
-      height: '100vh',
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border)',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '20px 0',
-      zIndex: 100,
-    }}>
-      <div style={{ padding: '0 20px 20px', borderBottom: '1px solid var(--border)', marginBottom: '12px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--primary)' }}>Futebol Career</h2>
-        {player && (
-          <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            {player.name} · OVR {player.overall}
-          </div>
-        )}
-      </div>
+    <>
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileOpen(!mobileOpen)}
+        aria-label="Menu"
+      >
+        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
-        {navItems.map(item => {
-          const Icon = item.icon
-          const active = currentPage === item.id
-          return (
-            <button
-              key={item.id}
-              onClick={() => dispatch({ type: 'SET_PAGE', payload: item.id })}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
-                border: 'none',
-                background: active ? 'rgba(16,185,129,0.15)' : 'transparent',
-                color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                marginBottom: '4px',
-                textAlign: 'left',
-              }}
-              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--bg-tertiary)' }}
-              onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
-            >
-              <Icon size={20} />
-              {item.label}
-            </button>
-          )
-        })}
-      </div>
+      {mobileOpen && (
+        <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />
+      )}
 
-      <div style={{ padding: '12px 20px 0', borderTop: '1px solid var(--border)' }}>
-        <button
-          onClick={() => dispatch({ type: 'SET_PAGE', payload: 'menu' })}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px',
-            borderRadius: 'var(--radius-md)',
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          <LogOut size={20} />
-          Sair
-        </button>
-      </div>
-    </nav>
+      <nav className={mobileOpen ? 'mobile-open' : ''} style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        width: 'var(--sidebar-width)',
+        height: '100vh',
+        background: 'var(--bg-secondary)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '20px 0',
+        zIndex: 100,
+      }}>
+        <div style={{ padding: '0 20px 20px', borderBottom: '1px solid var(--border)', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--primary)' }}>Futebol Career</h2>
+          {player && (
+            <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {player.name} · OVR {player.overall}
+            </div>
+          )}
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+          {navItems.map(item => {
+            const Icon = item.icon
+            const active = currentPage === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNav(item.id)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  background: active ? 'rgba(16,185,129,0.15)' : 'transparent',
+                  color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginBottom: '4px',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--bg-tertiary)' }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+              >
+                <Icon size={20} />
+                {item.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div style={{ padding: '12px 20px 0', borderTop: '1px solid var(--border)' }}>
+          <button
+            onClick={() => handleNav('menu')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              borderRadius: 'var(--radius-md)',
+              border: 'none',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <LogOut size={20} />
+            Sair
+          </button>
+        </div>
+      </nav>
+    </>
   )
 }
