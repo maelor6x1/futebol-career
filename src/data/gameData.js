@@ -754,7 +754,7 @@ export const ACHIEVEMENTS = [
 // BLOCO 14 - UTILITÁRIOS E FUNÇÕES AUXILIARES
 // ============================================
 
-export const AGE_MILESTONES = [
+export const CAREER_MILESTONES = [
   { age: 16, label: 'Estreia Profissional', description: 'Idade mínima para jogar profissionalmente' },
   { age: 18, label: 'Maioridade', description: 'Pode assinar contratos internacionais sem restrições' },
   { age: 21, label: 'Promessa Consolidada', description: 'Expectativas aumentam significativamente' },
