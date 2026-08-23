@@ -26,30 +26,29 @@ export default function Dashboard() {
         Painel Principal
       </h1>
 
-      {/* Top Stats Cards */}
-      <div className="grid grid-4" style={{ marginBottom: '24px' }}>
-        <div className="card" style={{ textAlign: 'center' }}>
+      <div className="grid grid-4 stats-grid" style={{ marginBottom: '24px' }}>
+        <div className="card" style={{ textAlign: 'center', minWidth: 0 }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Overall</div>
           <div style={{ fontSize: '36px', fontWeight: 900, color: 'var(--primary)' }}>{player.overall}</div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>OVR</div>
         </div>
-        <div className="card" style={{ textAlign: 'center' }}>
+        <div className="card" style={{ textAlign: 'center', minWidth: 0 }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Energia</div>
           <div style={{ fontSize: '36px', fontWeight: 900, color: getBarColor(player.energy) }}>{player.energy}%</div>
           <div className="progress-bar" style={{ marginTop: '8px' }}>
             <div className="progress-bar-fill primary" style={{ width: `${player.energy}%`, background: getBarColor(player.energy) }} />
           </div>
         </div>
-        <div className="card" style={{ textAlign: 'center' }}>
+        <div className="card" style={{ textAlign: 'center', minWidth: 0 }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Moral</div>
           <div style={{ fontSize: '36px', fontWeight: 900, color: getBarColor(player.morale) }}>{player.morale}%</div>
           <div className="progress-bar" style={{ marginTop: '8px' }}>
             <div className="progress-bar-fill primary" style={{ width: `${player.morale}%`, background: getBarColor(player.morale) }} />
           </div>
         </div>
-        <div className="card" style={{ textAlign: 'center' }}>
+        <div className="card" style={{ textAlign: 'center', minWidth: 0 }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Saldo</div>
-          <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--primary)' }}>
+          <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--primary)', wordBreak: 'break-word' }}>
             ${(finances.balance || 0).toLocaleString()}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>semanal: ${(finances.weeklySalary || 0).toLocaleString()}</div>
@@ -57,7 +56,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-2">
-        {/* Attributes */}
         <div className="card">
           <div className="card-header">
             <span className="card-title">Atributos</span>
@@ -87,9 +85,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Right Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Next Match */}
           <div className="card">
             <div className="card-header">
               <span className="card-title">Próxima Partida</span>
@@ -97,13 +93,13 @@ export default function Dashboard() {
             </div>
             {nextMatch ? (
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '14px', fontWeight: 700 }}>{club.name}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Casa</div>
                   </div>
                   <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--text-muted)' }}>VS</div>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '14px', fontWeight: 700 }}>{nextMatch.opponent?.name}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{nextMatch.competition}</div>
                   </div>
@@ -121,7 +117,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Relationships */}
           <div className="card">
             <div className="card-header">
               <span className="card-title">Relacionamentos</span>
@@ -153,13 +148,12 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* Career Stats */}
           <div className="card">
             <div className="card-header">
               <span className="card-title">Estatísticas da Carreira</span>
               <TrendingUp size={18} color="var(--text-muted)" />
             </div>
-            <div className="grid grid-3" style={{ textAlign: 'center' }}>
+            <div className="grid grid-3 stats-grid" style={{ textAlign: 'center' }}>
               <div>
                 <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--primary)' }}>{player.matches || 0}</div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Jogos</div>
