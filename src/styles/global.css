@@ -583,4 +583,24 @@ label {
   .stat-label {
     width: 70px;
   }
+.main-content {
+  margin-left: var(--sidebar-width);
 }
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    padding: 16px !important;
+    padding-top: 72px !important;
+    max-width: 100% !important;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px !important;
+    padding-top: 64px !important;
+  }
+}
+
