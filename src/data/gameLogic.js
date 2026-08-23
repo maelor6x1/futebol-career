@@ -32,31 +32,32 @@ export function generateInitialAttributes(position, potential = 70) {
   return attrs;
 }
 
-export function calculateOverall(attrs, position) {
-  let total = 0;
-  let count = 0;
-  const weights = {
-    GK: { reflexes: 0.25, handling: 0.2, positioningGK: 0.2, kicking: 0.15, oneOnOne: 0.15, composure: 0.05 },
-    CB: { tackling: 0.2, marking: 0.2, interception: 0.15, aerial: 0.15, strength: 0.1, heading: 0.1, positioning: 0.1 },
-    LB: { pace: 0.2, stamina: 0.15, crossing: 0.15, tackling: 0.15, marking: 0.15, dribbling: 0.1, passing: 0.1 },
-    RB: { pace: 0.2, stamina: 0.15, crossing: 0.15, tackling: 0.15, marking: 0.15, dribbling: 0.1, passing: 0.1 },
-    CDM: { tackling: 0.2, interception: 0.15, passing: 0.15, vision: 0.1, stamina: 0.15, strength: 0.1, workRate: 0.15 },
-    CM: { passing: 0.2, vision: 0.15, stamina: 0.15, dribbling: 0.1, tackling: 0.1, workRate: 0.15, composure: 0.15 },
-    CAM: { vision: 0.2, passing: 0.15, dribbling: 0.15, shooting: 0.15, composure: 0.15, positioning: 0.1, pace: 0.1 },
-    LM: { pace: 0.2, dribbling: 0.15, crossing: 0.15, stamina: 0.15, passing: 0.1, shooting: 0.1, acceleration: 0.15 },
-    RM: { pace: 0.2, dribbling: 0.15, crossing: 0.15, stamina: 0.15, passing: 0.1, shooting: 0.1, acceleration: 0.15 },
-    LW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
-    RW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
-    ST: { shooting: 0.25, heading: 0.15, positioning: 0.15, pace: 0.1, strength: 0.1, composure: 0.15, finishing: 0.1 },
-    CF: { shooting: 0.2, dribbling: 0.15, vision: 0.1, passing: 0.1, positioning: 0.15, pace: 0.1, composure: 0.1, strength: 0.1 },
+export function calculatePotential(age, height, weight, nationality, position) {
+  let potential = Math.floor(Math.random() * 26) + 55;
+
+  if (age <= 16) potential += 12;
+  else if (age <= 17) potential += 8;
+  else if (age <= 18) potential += 5;
+  else if (age <= 19) potential += 2;
+  else if (age >= 25) potential -= 5;
+
+  if (height >= 195) potential -= 2;
+  if (height <= 165) potential += 2;
+
+  const idealWeight = (height - 100) * 0.9;
+  if (weight > idealWeight + 10) potential -= 3;
+
+  const posBonus = {
+    gk: 0, cb: 1, lb: 2, rb: 2,
+    cdm: 1, cm: 3, cam: 3, lm: 2, rm: 2,
+    lw: 3, rw: 3, st: 3, cf: 2,
   };
-  const w = weights[position] || weights.CM;
-  Object.entries(w).forEach(([attr, weight]) => {
-    const val = attrs[attr] || 50;
-    total += val * weight;
-    count += weight;
-  });
-  return Math.round(total / count);
+  potential += posBonus[position] || 0;
+
+  const strongNations = ['Brasil','Argentina','França','Espanha','Alemanha','Inglaterra','Itália','Portugal','Holanda','Bélgica','Uruguai','Croácia'];
+  if (strongNations.includes(nationality)) potential += 3;
+
+  return Math.min(99, Math.max(40, potential));
 }
 
 export function simulateMatchEvents(player, opponent, minutes, position, difficulty = 'normal') {
@@ -291,70 +292,27 @@ export function calculatePotential(position, age = 16, nationality = 'Brasil') {
   // Cap entre 40 e 99
   return Math.min(99, Math.max(40, potential));
 }
-export function assignInitialClub(overall, potential, age, nationality, position) {
-  // Importa CLUBS do gameData.js (já deve estar importado no topo do arquivo)
-  // Se não estiver, adicione: import { CLUBS } from './gameData.js';
-  
-  // Jogadores muito jovens (16-17) começam em clubes menores ou base
-  // Jogadores mais velhos (18-20) podem ir para clubes médios
-  // Raros casos de jovens promessas vão direto para grandes clubes
-  
-  let eligibleClubs = [];
-  
-  // Define tier baseado em overall e potencial
-  let targetTier = 3; // Default: começa em divisão inferior
-  
+export function assignInitialClub(overall, potential, nationality) {
+  let targetTier = 3;
   const combinedScore = overall + (potential - overall) * 0.5;
-  
-  if (age <= 17) {
-    // Jovens: clubes de série B/C ou times de base de grandes clubes
-    if (combinedScore >= 75) targetTier = 2;
-    if (combinedScore >= 85) targetTier = 1; // Raro: promessa vai direto pro time principal
-  } else if (age <= 20) {
-    if (combinedScore >= 55) targetTier = 2;
-    if (combinedScore >= 70) targetTier = 1;
-  } else {
-    if (combinedScore >= 50) targetTier = 2;
-    if (combinedScore >= 65) targetTier = 1;
-  }
-  
-  // Filtra clubes pelo tier
-  eligibleClubs = CLUBS.filter(club => club.tier === targetTier);
-  
-  // Se não houver clubes no tier, expande
+
+  if (combinedScore >= 70) targetTier = 1;
+  else if (combinedScore >= 55) targetTier = 2;
+
+  let eligibleClubs = CLUBS.filter(club => club.tier === targetTier);
   if (eligibleClubs.length === 0) {
     eligibleClubs = CLUBS.filter(club => club.tier <= targetTier + 1);
   }
-  
-  // Preferência por clubes do mesmo país da nacionalidade
+
   const sameCountryClubs = eligibleClubs.filter(club => club.country === nationality);
-  const otherClubs = eligibleClubs.filter(club => club.country !== nationality);
-  
-  // 60% chance de começar no próprio país, 40% no exterior
-  let finalPool = sameCountryClubs.length > 0 && Math.random() < 0.6 
-    ? sameCountryClubs 
-    : (otherClubs.length > 0 ? otherClubs : eligibleClubs);
-  
-  // Se ainda vazio, usa todos
-  if (finalPool.length === 0) finalPool = CLUBS;
-  
-  // Sorteia um clube
-  const selectedClub = finalPool[Math.floor(Math.random() * finalPool.length)];
-  
-  // Define situação no clube
-  let status = 'rotation'; // reserva/rodízio por padrão
-  if (combinedScore >= 80) status = 'starter'; // titular se for muito bom
-  if (combinedScore <= 50) status = 'bench'; // banco se for fraco
-  if (age <= 17) status = 'youth'; // time de base
-  
-  return {
-    club: selectedClub,
-    status: status,
-    contractYears: age <= 18 ? 3 : (age <= 21 ? 4 : 3),
-    wage: calculateInitialWage(overall, potential, age, selectedClub),
-    squadNumber: Math.floor(Math.random() * 30) + 1,
-  };
+  const finalPool = sameCountryClubs.length > 0 && Math.random() < 0.6
+    ? sameCountryClubs
+    : eligibleClubs;
+
+  const selectedClub = finalPool[Math.floor(Math.random() * finalPool.length)] || CLUBS[0];
+  return selectedClub;
 }
+
 
 function calculateInitialWage(overall, potential, age, club) {
   // Salário base
