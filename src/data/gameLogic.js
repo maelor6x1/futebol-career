@@ -312,34 +312,3 @@ export function assignInitialClub(overall, potential, nationality) {
   const selectedClub = finalPool[Math.floor(Math.random() * finalPool.length)] || CLUBS[0];
   return selectedClub;
 }
-
-
-function calculateInitialWage(overall, potential, age, club) {
-  // Salário base
-  let baseWage = 1000;
-  
-  // Multiplicador por overall
-  if (overall >= 80) baseWage = 50000;
-  else if (overall >= 70) baseWage = 15000;
-  else if (overall >= 60) baseWage = 5000;
-  else if (overall >= 50) baseWage = 2000;
-  
-  // Bônus por potencial
-  if (potential >= 90) baseWage *= 2;
-  else if (potential >= 80) baseWage *= 1.5;
-  
-  // Redutor por idade (jovens ganham menos)
-  if (age <= 17) baseWage *= 0.3;
-  else if (age <= 19) baseWage *= 0.6;
-  else if (age <= 21) baseWage *= 0.8;
-  
-  // Multiplicador pelo orçamento/reputação do clube
-  const clubMultiplier = Math.max(0.5, club.budget / 50000000);
-  baseWage *= clubMultiplier;
-  
-  // Variação aleatória de ±20%
-  const variance = 0.8 + Math.random() * 0.4;
-  baseWage *= variance;
-  
-  return Math.floor(baseWage);
-}
