@@ -956,16 +956,17 @@ export const INJURY_TYPES = [
 // ============================================
 
 export const TRAINING_TYPES = [
-  { id: 'technical', name: 'Treino Técnico', description: 'Melhora atributos técnicos', focus: ['finishing', 'passing', 'dribbling', 'crossing'], energyCost: 15, xpGain: 50 },
-  { id: 'physical', name: 'Treino Físico', description: 'Melhora atributos físicos', focus: ['pace', 'stamina', 'strength', 'agility'], energyCost: 20, xpGain: 50 },
-  { id: 'tactical', name: 'Treino Tático', description: 'Melhora atributos mentais e posicionamento', focus: ['positioning', 'vision', 'decisions', 'teamwork'], energyCost: 12, xpGain: 40 },
-  { id: 'defensive', name: 'Treino Defensivo', description: 'Melhora atributos defensivos', focus: ['marking', 'tackling', 'interceptions', 'positioning'], energyCost: 15, xpGain: 45 },
-  { id: 'setpieces', name: 'Treino de Bolas Paradas', description: 'Melhora cobranças e finalizações', focus: ['freeKick', 'finishing', 'heading', 'longShots'], energyCost: 10, xpGain: 35 },
-  { id: 'goalkeeper', name: 'Treino de Goleiro', description: 'Melhora atributos de goleiro', focus: ['reflexes', 'handling', 'positioning', 'oneOnOne'], energyCost: 15, xpGain: 50 },
-  { id: 'recovery', name: 'Recuperação', description: 'Recupera energia e reduz risco de lesão', focus: [], energyCost: -30, xpGain: 5 },
-  { id: 'intense', name: 'Treino Intenso', description: 'Ganho extra de XP com maior custo de energia', focus: ['all'], energyCost: 30, xpGain: 80 },
-  { id: 'rest', name: 'Descanso', description: 'Recupera energia completamente', focus: [], energyCost: -50, xpGain: 0 },
+  { id: 'technical', name: 'Treino Técnico', description: 'Melhora atributos técnicos', icon: 'Zap', attributes: ['finishing', 'passing', 'dribbling', 'crossing'], energyCost: 15, xpGain: 50 },
+  { id: 'physical', name: 'Treino Físico', description: 'Melhora atributos físicos', icon: 'Dumbbell', attributes: ['pace', 'stamina', 'strength', 'agility'], energyCost: 20, xpGain: 50 },
+  { id: 'tactical', name: 'Treino Tático', description: 'Melhora atributos mentais e posicionamento', icon: 'Brain', attributes: ['positioning', 'vision', 'decisions', 'teamwork'], energyCost: 12, xpGain: 40 },
+  { id: 'defensive', name: 'Treino Defensivo', description: 'Melhora atributos defensivos', icon: 'Shield', attributes: ['marking', 'tackling', 'interceptions', 'positioning'], energyCost: 15, xpGain: 45 },
+  { id: 'setpieces', name: 'Treino de Bolas Paradas', description: 'Melhora cobranças e finalizações', icon: 'Flag', attributes: ['freeKick', 'finishing', 'heading', 'longShots'], energyCost: 10, xpGain: 35 },
+  { id: 'goalkeeper', name: 'Treino de Goleiro', description: 'Melhora atributos de goleiro', icon: 'Hand', attributes: ['reflexes', 'handling', 'positioning', 'oneOnOne'], energyCost: 15, xpGain: 50 },
+  { id: 'recovery', name: 'Recuperação', description: 'Recupera energia e reduz risco de lesão', icon: 'BatteryCharging', attributes: [], energyCost: -30, xpGain: 5 },
+  { id: 'intense', name: 'Treino Intenso', description: 'Ganho extra de XP com maior custo de energia', icon: 'Zap', attributes: ['all'], energyCost: 30, xpGain: 80 },
+  { id: 'rest', name: 'Descanso', description: 'Recupera energia completamente', icon: 'BatteryCharging', attributes: [], energyCost: -50, xpGain: 0 },
 ];
+
 
 // ============================================
 // BLOCO 13 - FRASES DA MÍDIA
