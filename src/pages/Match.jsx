@@ -12,20 +12,33 @@ export default function Match() {
   const [score, setScore] = useState({ player: 0, opponent: 0 })
   const [matchRating, setMatchRating] = useState(6.0)
   const [playerEvents, setPlayerEvents] = useState([])
+  const [fixedOpponent, setFixedOpponent] = useState(null)
   const intervalRef = useRef(null)
 
   const nextMatch = career.calendar?.find(m => !m.played)
   const club = CLUBS.find(c => c.id === player.clubId)
-  const opponent = nextMatch?.opponent || { name: 'Adversário', reputation: 70 }
+  
+  // Fix opponent when entering preview phase
+  useEffect(() => {
+    if (phase === 'preview' && nextMatch?.opponent && !fixedOpponent) {
+      setFixedOpponent(nextMatch.opponent)
+    }
+  }, [phase, nextMatch, fixedOpponent])
+  
+  const opponent = fixedOpponent || nextMatch?.opponent || { name: 'Adversário', reputation: 70 }
 
   const startMatch = () => {
+    // Fix opponent at match start
+    const currentOpponent = nextMatch?.opponent || { name: 'Adversário', reputation: 70 }
+    setFixedOpponent(currentOpponent)
+    
     setPhase('playing')
     setMinute(0)
     setEvents([])
     setScore({ player: 0, opponent: 0 })
     setPlayerEvents([])
 
-    const result = simulateMatchEvents(player, opponent, 90, player.position)
+    const result = simulateMatchEvents(player, currentOpponent, 90, player.position)
 
     let currentMinute = 0
     intervalRef.current = setInterval(() => {
@@ -59,7 +72,7 @@ export default function Match() {
           payload: {
             matchResult: {
               matchId: nextMatch?.id,
-              opponent: opponent.name,
+              opponent: currentOpponent.name,
               playerGoals: playerGoals,
               playerAssists: playerAssists,
               playerScore: result.playerGoals,
@@ -107,12 +120,12 @@ export default function Match() {
 
       {/* Scoreboard */}
       <div className="card" style={{ marginBottom: '24px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', marginBottom: '16px' }}>
+        <div className="match-scoreboard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', marginBottom: '16px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '18px', fontWeight: 700 }}>{club?.name}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Casa</div>
           </div>
-          <div style={{
+          <div className="match-score" style={{
             fontSize: '48px', fontWeight: 900, fontFamily: 'monospace',
             background: 'var(--bg-tertiary)', padding: '8px 24px', borderRadius: 'var(--radius-lg)'
           }}>
@@ -138,7 +151,7 @@ export default function Match() {
         </div>
 
         {/* Controls */}
-        <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {phase === 'preview' && (
             <button onClick={startMatch} className="btn btn-primary btn-lg">
               <Play size={20} /> Iniciar Partida
@@ -166,7 +179,7 @@ export default function Match() {
           <div style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>
             Nota: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>{matchRating}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '12px', flexWrap: 'wrap' }}>
             <div><span style={{ color: 'var(--success)', fontWeight: 700 }}>{playerEvents.filter(e => e.type === 'goal').length}</span> gols</div>
             <div><span style={{ color: 'var(--secondary)', fontWeight: 700 }}>{playerEvents.filter(e => e.type === 'assist').length}</span> assistências</div>
           </div>
