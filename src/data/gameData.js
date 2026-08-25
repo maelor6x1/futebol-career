@@ -652,7 +652,6 @@ export const CLUBS = [
   { id: 'ccmari', name: 'Central Coast Mariners', country: 'Austrália', league: 'A-League', tier: 1, reputation: 67, budget: 25, color: '#FDE100' },
   { id: 'adelutd', name: 'Adelaide United', country: 'Austrália', league: 'A-League', tier: 1, reputation: 69, budget: 29, color: '#E31937' },
   { id: 'wstunit', name: 'Western United', country: 'Austrália', league: 'A-League', tier: 1, reputation: 68, budget: 27, color: '#000000' },
-
 ];
 export const COMPETITIONS = [
 // Brasil
