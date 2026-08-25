@@ -66,6 +66,10 @@ function gameReducer(state, action) {
     case 'CREATE_PLAYER': {
       const player = action.payload
       const club = CLUBS.find(c => c.id === player.clubId)
+      if (!club) {
+        console.error('Clube não encontrado:', player.clubId)
+        return state
+      }
       const weeklySalary = calculateWeeklySalary(player.overall, 30, club.budget)
       const calendar = generateSeasonCalendar(player.clubId, player.season || 2024)
       const newState = {
@@ -99,23 +103,19 @@ function gameReducer(state, action) {
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
     case 'SET_PAGE':
       return { ...state, currentPage: action.payload }
-
     case 'UPDATE_PLAYER': {
       const newState = { ...state, player: { ...state.player, ...action.payload } }
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
     case 'PLAY_MATCH': {
       const { matchResult } = action.payload
       const updatedMatches = [...state.career.matches, matchResult]
       const updatedCalendar = state.career.calendar.map(m =>
         m.id === matchResult.matchId ? { ...m, played: true, result: matchResult } : m
       )
-
       const updatedPlayer = { ...state.player }
       if (matchResult.playerGoals) updatedPlayer.goals = (updatedPlayer.goals || 0) + matchResult.playerGoals
       if (matchResult.playerAssists) updatedPlayer.assists = (updatedPlayer.assists || 0) + matchResult.playerAssists
@@ -140,23 +140,16 @@ function gameReducer(state, action) {
       const bonus = matchResult.result === 'win' ? state.finances.weeklySalary * 0.5 : 0
       const updatedFinances = {
         ...state.finances,
-        balance: state.finances.balance + state.finances.weeklySalary + bonus,
+        balance: state.finances.balance + weeklySalary + bonus,
         transactions: [
           ...state.finances.transactions,
           {
             id: Date.now(),
             date: `Semana ${state.career.week}`,
-            description: 'Salário semanal',
-            amount: state.finances.weeklySalary,
+            description: `Partida vs ${matchResult.opponent}`,
+            amount: weeklySalary + bonus,
             type: 'income',
           },
-          ...(bonus > 0 ? [{
-            id: Date.now() + 1,
-            date: `Semana ${state.career.week}`,
-            description: 'Bônus por vitória',
-            amount: bonus,
-            type: 'income',
-          }] : []),
         ],
       }
 
@@ -184,15 +177,16 @@ function gameReducer(state, action) {
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
     case 'TRAIN': {
-      const { trainingType, improvements, totalImprovement, energyCost, newAttributes, newOverall, newEnergy } = action.payload
-      const updatedPlayer = {
-        ...state.player,
-        attributes: newAttributes,
-        overall: newOverall,
-        energy: newEnergy,
-      }
+      const { trainingType, improvements, totalImprovement, energyCost } = action.payload
+      const updatedPlayer = { ...state.player, attributes: { ...state.player.attributes } }
+      Object.entries(improvements).forEach(([attr, gain]) => {
+        if (updatedPlayer.attributes[attr] !== undefined) {
+          updatedPlayer.attributes[attr] = Math.min(99, updatedPlayer.attributes[attr] + gain)
+        }
+      })
+      updatedPlayer.overall = calculateOverall(updatedPlayer.attributes, updatedPlayer.position)
+      updatedPlayer.energy = Math.max(0, Math.min(100, updatedPlayer.energy + energyCost))
 
       const newState = {
         ...state,
@@ -205,7 +199,6 @@ function gameReducer(state, action) {
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
     case 'SIGN_SPONSOR': {
       const sponsor = action.payload
       const newSponsors = [...state.sponsors, { ...sponsor, signedAt: Date.now() }]
@@ -224,55 +217,78 @@ function gameReducer(state, action) {
           },
         ],
       }
-      const newNotifications = [
-        ...state.notifications,
-        {
-          id: `notif_${notifId++}`,
-          type: 'success',
-          title: 'Patrocinador Assinado',
-          message: `Você assinou com ${sponsor.name} (+$${sponsor.bonus.toLocaleString()}/semana)`,
-          timestamp: Date.now(),
-        },
-      ]
-      const newState = { ...state, sponsors: newSponsors, finances: updatedFinances, notifications: newNotifications.slice(-10) }
+      const newState = {
+        ...state,
+        sponsors: newSponsors,
+        finances: updatedFinances,
+      }
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
+    case 'ADVANCE_WEEK': {
+      const nextWeek = state.career.week + 1
+      const nextMonth = Math.floor(nextWeek / 4) % 12
+      const nextYear = state.career.year + Math.floor(nextWeek / 48)
 
-    case 'END_SPONSOR': {
-      const sponsorId = action.payload
-      const removed = state.sponsors.find(s => s.id === sponsorId)
-      const newSponsors = state.sponsors.filter(s => s.id !== sponsorId)
+      const updatedPlayer = {
+        ...state.player,
+        energy: Math.min(100, state.player.energy + 20),
+      }
+
+      const updatedCareer = {
+        ...state.career,
+        week: nextWeek,
+        month: nextMonth,
+        year: nextYear,
+      }
+
+      const weeklyIncome = state.finances.weeklySalary + state.finances.sponsorIncome
       const updatedFinances = {
         ...state.finances,
-        sponsorIncome: newSponsors.reduce((sum, s) => sum + s.bonus, 0),
+        balance: state.finances.balance + weeklyIncome,
         transactions: [
           ...state.finances.transactions,
           {
             id: Date.now(),
-            date: `Semana ${state.career.week}`,
-            description: `Fim de contrato com ${removed?.name || 'Patrocinador'}`,
-            amount: 0,
-            type: 'expense',
+            date: `Semana ${nextWeek}`,
+            description: 'Salário semanal',
+            amount: weeklyIncome,
+            type: 'income',
           },
         ],
       }
-      const newState = { ...state, sponsors: newSponsors, finances: updatedFinances }
+
+      const newState = {
+        ...state,
+        player: updatedPlayer,
+        career: updatedCareer,
+        finances: updatedFinances,
+      }
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
-    case 'TRANSFER': {
-      const { clubId, transferFee } = action.payload
+    case 'TRANSFER_PLAYER': {
+      const { clubId, transferFee, newSalary } = action.payload
       const newClub = CLUBS.find(c => c.id === clubId)
-      const newSalary = calculateWeeklySalary(state.player.overall, state.career.reputation, newClub.budget)
       const updatedPlayer = {
         ...state.player,
         clubId,
         clubName: newClub.name,
-        previousClub: state.player.clubId,
+        transferValue: calculateTransferValue(state.player.overall, state.player.age, state.player.potential),
       }
-      const newCalendar = generateSeasonCalendar(clubId, state.career.season)
+      const updatedCareer = {
+        ...state.career,
+        history: [
+          ...state.career.history,
+          {
+            type: 'transfer',
+            from: state.player.clubName,
+            to: newClub.name,
+            fee: transferFee,
+            date: `Semana ${state.career.week}`,
+          },
+        ],
+      }
       const updatedFinances = {
         ...state.finances,
         weeklySalary: newSalary,
@@ -291,23 +307,12 @@ function gameReducer(state, action) {
       const newState = {
         ...state,
         player: updatedPlayer,
-        career: {
-          ...state.career,
-          calendar: newCalendar,
-          transfers: (state.career.transfers || 0) + 1,
-        },
+        career: updatedCareer,
         finances: updatedFinances,
       }
       if (newState.settings.autoSave) saveGame(newState)
       return newState
     }
-
-    case 'UPDATE_SETTINGS': {
-      const newState = { ...state, settings: { ...state.settings, ...action.payload } }
-      if (newState.settings.autoSave) saveGame(newState)
-      return newState
-    }
-
     case 'LOAD_GAME': {
       const saved = loadGame()
       if (saved && saved.player) {
@@ -324,36 +329,30 @@ function gameReducer(state, action) {
       }
       return state
     }
-
     case 'CHECK_SAVE': {
       const saved = loadGame()
       return { ...state, hasSave: !!(saved && saved.player) }
     }
-
     case 'SAVE_GAME': {
       if (state.player) saveGame(state)
       return state
     }
-
     case 'RESET_GAME': {
       localStorage.removeItem('futebolCareer_save')
       return { ...initialState, hasSave: false }
     }
-
     case 'ADD_NOTIFICATION': {
       return {
         ...state,
         notifications: [...state.notifications, { ...action.payload, id: `notif_${notifId++}`, timestamp: Date.now() }].slice(-10),
       }
     }
-
     case 'DISMISS_NOTIFICATION': {
       return {
         ...state,
         notifications: state.notifications.filter(n => n.id !== action.payload),
       }
     }
-
     default:
       return state
   }
