@@ -442,4 +442,21 @@ export function loadGame() {
 
 export function deleteSave() {
   localStorage.removeItem('futebolCareer_save')
+// Calculate player potential based on current attributes and position
+export function calculatePotential(attrs, position) {
+  const overall = calculateOverall(attrs, position)
+  const variance = Math.floor(Math.random() * 11) + 15
+  return Math.min(99, overall + variance)
+}
+
+// Assign an initial club based on nationality and position
+export function assignInitialClub(nationality, position) {
+  if (nationality === 'Brasil') {
+    const brazilClubs = CLUBS.filter(c => c.country === 'Brasil')
+    return brazilClubs[Math.floor(Math.random() * brazilClubs.length)]?.id || 'pal'
+  }
+  const europeClubs = CLUBS.filter(c => c.country !== 'Brasil')
+  return europeClubs[Math.floor(Math.random() * europeClubs.length)]?.id || 'rea'
+}
+
 }
