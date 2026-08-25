@@ -50,7 +50,7 @@ export function calculateOverall(attrs, position) {
     RM: { pace: 0.2, dribbling: 0.15, crossing: 0.15, stamina: 0.15, passing: 0.1, shooting: 0.1, acceleration: 0.15 },
     LW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
     RW: { pace: 0.2, dribbling: 0.2, shooting: 0.15, acceleration: 0.15, crossing: 0.1, composure: 0.1, stamina: 0.1 },
-    ST: { shooting: 0.25, heading: 0.15, positioning: 0.15, pace: 0.1, strength: 0.1, composure: 0.15, finishing: 0.1 },
+    ST: { shooting: 0.3, heading: 0.15, positioning: 0.15, pace: 0.1, strength: 0.1, composure: 0.15 },
     CF: { shooting: 0.2, dribbling: 0.15, vision: 0.1, passing: 0.1, positioning: 0.15, pace: 0.1, composure: 0.1, strength: 0.1 },
   }
   const w = weights[position] || weights.CM
