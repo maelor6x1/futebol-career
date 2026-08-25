@@ -442,6 +442,7 @@ export function loadGame() {
 
 export function deleteSave() {
   localStorage.removeItem('futebolCareer_save')
+}
 // Calculate player potential based on current attributes and position
 export function calculatePotential(attrs, position) {
   const overall = calculateOverall(attrs, position)
@@ -459,4 +460,4 @@ export function assignInitialClub(nationality, position) {
   return europeClubs[Math.floor(Math.random() * europeClubs.length)]?.id || 'rea'
 }
 
-}
+
